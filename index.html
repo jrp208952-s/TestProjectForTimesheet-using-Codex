@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en" ng-app="workforceApp">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Time Tracking & Workforce Management</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body ng-controller="MainController as vm">
+  <header>
+    <h1>Time Tracking & Workforce Management System</h1>
+    <p>AngularJS Single Page Application</p>
+  </header>
+
+  <nav class="tabs">
+    <button ng-repeat="tab in vm.tabs" ng-click="vm.activeTab = tab" ng-class="{active: vm.activeTab === tab}">{{ tab }}</button>
+  </nav>
+
+  <main>
+    <section ng-show="vm.activeTab === 'Dashboard'" class="panel-grid">
+      <article class="card">
+        <h3>Alerts & Notifications</h3>
+        <ul>
+          <li ng-repeat="alert in vm.alerts">{{ alert }}</li>
+        </ul>
+      </article>
+      <article class="card">
+        <h3>Payroll Integration Snapshot</h3>
+        <p>Total payable overtime hours: <strong>{{ vm.totalOvertimeHours() | number:2 }}</strong></p>
+        <p>Estimated overtime payout: <strong>${{ vm.overtimePayout() | number:2 }}</strong></p>
+      </article>
+      <article class="card full-width">
+        <h3>Reporting & Analytics</h3>
+        <div id="statusBarChart" class="chart"></div>
+        <div id="statusPieChart" class="chart"></div>
+      </article>
+    </section>
+
+    <section ng-show="vm.activeTab === 'Todo & Issues'" class="panel-grid">
+      <article class="card full-width">
+        <h3>Todo Management (CRUD)</h3>
+        <form ng-submit="vm.saveTodo()" class="form-grid">
+          <input ng-model="vm.todoForm.title" placeholder="Task title" required />
+          <select ng-model="vm.todoForm.type" required>
+            <option value="Issue">Issue</option>
+            <option value="Bug">Bug</option>
+            <option value="Enhancement">Enhancement</option>
+            <option value="Feature">Feature</option>
+          </select>
+          <label>Start
+            <input type="datetime-local" ng-model="vm.todoForm.start" required />
+          </label>
+          <label>End
+            <input type="datetime-local" ng-model="vm.todoForm.end" required />
+          </label>
+          <button type="submit">{{ vm.todoForm.id ? 'Update' : 'Add' }} Task</button>
+        </form>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th><th>Type</th><th>Status</th><th>Start</th><th>End</th><th>Estimation (hrs)</th><th>Chat</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="todo in vm.todos track by todo.id">
+              <td>{{ todo.title }}</td>
+              <td>{{ todo.type }}</td>
+              <td>
+                <select ng-model="todo.status" ng-options="s for s in vm.statusOptions(todo)"></select>
+              </td>
+              <td>{{ todo.start | date:'short' }}</td>
+              <td>{{ todo.end | date:'short' }}</td>
+              <td>{{ vm.estimateHours(todo) | number:2 }}</td>
+              <td>
+                <div class="chat-box">
+                  <div class="messages">
+                    <div ng-repeat="msg in todo.chat track by $index">{{ msg }}</div>
+                  </div>
+                  <input ng-model="todo.newMsg" placeholder="message" />
+                  <button ng-click="vm.sendChat(todo)">Send</button>
+                </div>
+              </td>
+              <td>
+                <button ng-click="vm.editTodo(todo)">Edit</button>
+                <button ng-click="vm.toggleReopen(todo)">{{ todo.reopened ? 'Close Reopen' : 'Reopen' }}</button>
+                <button ng-click="vm.deleteTodo(todo.id)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section ng-show="vm.activeTab === 'Planning & Workforce'" class="panel-grid">
+      <article class="card">
+        <h3>Daily Meeting Planning & Updates</h3>
+        <form ng-submit="vm.addMeeting()">
+          <input ng-model="vm.meetingInput" placeholder="Meeting update" required />
+          <button type="submit">Add Update</button>
+        </form>
+        <ul><li ng-repeat="m in vm.meetings">{{ m }}</li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Interview Tracking (Recruitment)</h3>
+        <form ng-submit="vm.addInterview()">
+          <input ng-model="vm.interviewForm.candidate" placeholder="Candidate" required />
+          <input ng-model="vm.interviewForm.role" placeholder="Role" required />
+          <select ng-model="vm.interviewForm.stage" required>
+            <option>Scheduled</option><option>Screening</option><option>Technical</option><option>Offer</option><option>Rejected</option>
+          </select>
+          <button type="submit">Add</button>
+        </form>
+        <ul><li ng-repeat="i in vm.interviews">{{ i.candidate }} - {{ i.role }} ({{ i.stage }})</li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Project & Release Planning</h3>
+        <form ng-submit="vm.addRelease()">
+          <input ng-model="vm.releaseForm.project" placeholder="Project" required />
+          <input ng-model="vm.releaseForm.version" placeholder="Release version" required />
+          <input type="date" ng-model="vm.releaseForm.date" required />
+          <button type="submit">Plan Release</button>
+        </form>
+        <ul><li ng-repeat="r in vm.releases">{{ r.project }} - {{ r.version }} on {{ r.date | date }}</li></ul>
+      </article>
+
+      <article class="card full-width">
+        <h3>Auto-Generated Daily Timesheets & Overtime</h3>
+        <table>
+          <thead><tr><th>Task</th><th>Hours</th><th>Overtime</th></tr></thead>
+          <tbody>
+            <tr ng-repeat="entry in vm.timesheet()">
+              <td>{{ entry.title }}</td>
+              <td>{{ entry.hours | number:2 }}</td>
+              <td>{{ entry.overtime | number:2 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+
+    <section ng-show="vm.activeTab === 'Feedback'" class="panel-grid">
+      <article class="card full-width">
+        <h3>Feedback Module</h3>
+        <form ng-submit="vm.generateFeedbackShare()" class="form-grid">
+          <input ng-model="vm.feedback.text" placeholder="Feedback details" required />
+          <button type="submit">Generate Share Link + QR</button>
+        </form>
+        <p><strong>Share Link:</strong> <a ng-href="{{ vm.feedback.link }}" target="_blank">{{ vm.feedback.link }}</a></p>
+        <img ng-if="vm.feedback.qr" ng-src="{{ vm.feedback.qr }}" alt="Feedback QR" class="qr"/>
+      </article>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
