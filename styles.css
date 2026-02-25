@@ -1,0 +1,108 @@
+:root {
+  --bg: #f7f9fc;
+  --card: #ffffff;
+  --primary: #2943d1;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: #1d2540;
+}
+header {
+  padding: 16px 20px;
+  background: #101a52;
+  color: #fff;
+}
+header h1 { margin: 0; font-size: 22px; }
+header p { margin: 4px 0 0; opacity: .8; }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #e8ecff;
+  flex-wrap: wrap;
+}
+.tabs button {
+  border: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.tabs button.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+main { padding: 20px; }
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(8, 23, 94, .08);
+}
+.full-width { grid-column: 1 / -1; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+input, select, button {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ced5ef;
+}
+button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+th, td {
+  border-bottom: 1px solid #e6eaf6;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-box {
+  min-width: 180px;
+}
+.messages {
+  max-height: 70px;
+  overflow: auto;
+  margin-bottom: 5px;
+  font-size: 12px;
+  background: #f5f7ff;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.chart {
+  width: 100%;
+  min-height: 300px;
+  margin-bottom: 12px;
+}
+
+.qr {
+  margin-top: 10px;
+  border: 1px solid #dce2ff;
+  border-radius: 10px;
+}
